@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <cctype>
 
 using namespace std;
 
@@ -17,6 +18,27 @@ public:
 	void setMsg(string msg);
 	void what(); // print step
 };
+
+HardwareException::HardwareException(string step = "", string msg = "") {
+	this->step = step;
+	this->msg = msg;
+}
+
+string HardwareException::getStep() {
+	return this->step;
+}
+
+string HardwareException::getMsg() {
+	return this->msg;
+}
+
+void HardwareException::setMsg(string msg) {
+	this->msg = msg;
+}
+
+void HardwareException::what() {
+
+}
 
 class CPU {
 	string instruction; // user input instruction
@@ -41,7 +63,7 @@ void CPU::decode() {
 	stringstream split(this->instruction);
 	bool isExist = false;
 
-	split >> this->cmd >> this->op1 >> this->op2;
+	split >> this->cmd;
 
 	for (int i = 0; i < 4; i++) {
 		if (!this->cmd.compare(*(command + i))) {
@@ -52,6 +74,20 @@ void CPU::decode() {
 	if (!isExist) {
 		throw ("decode", "invalid command line");
 	}
+
+	string temp;
+	getline(split, temp, ' ');
+	//split >> this->op1;
+	
+	if (!isdigit(op1)) {
+		throw ("", "");
+	}
+	else {
+		cout << "숫자 임" << endl;
+	}
+	//split >> this->cmd >> this->op1 >> this->op2;
+
+
 
 
 }
@@ -67,7 +103,9 @@ void CPU::execute() {
 
 	}
 	else if (!this->cmd.compare("DIV")) {
-
+		if (this->op2 == 0) {
+			throw ("0으로 나눌 수 없음");
+		}
 	}
 	else {
 		throw "";
@@ -75,7 +113,10 @@ void CPU::execute() {
 }
 
 void CPU::run() {
-	this->fetch();
+	//try {
+	//	this->fetch();
+	//}
+	//catch ();
 }
 
 int CPU::stringToInt(string x) {
