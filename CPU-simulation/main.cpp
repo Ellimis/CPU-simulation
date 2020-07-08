@@ -1,44 +1,22 @@
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <cctype>
+#include <sstream> // stringstream for string split
 
 using namespace std;
-
-const char* command[] = { "ADD", "SUB", "MUL", "DIV" };
-enum COMMAND { ADD, SUB, MUL, DIV };
 
 class HardwareException {
 	string step;
 	string msg;
 public:
-	HardwareException(string step = "", string msg = "");
-	string getStep();
-	string getMsg();
-	void setMsg(string msg);
-	void what(); // print step
+	HardwareException(string step = "", string msg = "") {
+		this->step = step;
+		this->msg = msg;
+	}
+	void what() { // print step
+		cout << this->step << " step, " << this->msg << endl;
+		exit(0);
+	}
 };
-
-HardwareException::HardwareException(string step = "", string msg = "") {
-	this->step = step;
-	this->msg = msg;
-}
-
-string HardwareException::getStep() {
-	return this->step;
-}
-
-string HardwareException::getMsg() {
-	return this->msg;
-}
-
-void HardwareException::setMsg(string msg) {
-	this->msg = msg;
-}
-
-void HardwareException::what() {
-
-}
 
 class CPU {
 	string instruction; // user input instruction
@@ -55,15 +33,17 @@ public:
 void CPU::fetch() {
 	getline(cin, this->instruction);
 
-	if (this->instruction.empty())
-		throw ("Fetch", "no command line");
+	if (this->instruction == "")
+		throw HardwareException("fetch", "no command line");
 }
 
 void CPU::decode() {
+	const char* command[] = { "ADD", "SUB", "MUL", "DIV" };
 	stringstream split(this->instruction);
+	string oper1, oper2;
 	bool isExist = false;
 
-	split >> this->cmd;
+	split >> this->cmd >> oper1 >> oper2;
 
 	for (int i = 0; i < 4; i++) {
 		if (!this->cmd.compare(*(command + i))) {
@@ -71,56 +51,56 @@ void CPU::decode() {
 		}
 	}
 
-	if (!isExist) {
-		throw ("decode", "invalid command line");
+	if (!isExist)
+		throw HardwareException("decode", "invalid command exception");
+	if (oper2 == "")
+		throw HardwareException("decode", "operand exception");
+
+	try {
+		this->op1 = this->stringToInt(oper1);
+		this->op2 = this->stringToInt(oper2);
 	}
-
-	string temp;
-	getline(split, temp, ' ');
-	//split >> this->op1;
-	
-	if (!isdigit(op1)) {
-		throw ("", "");
+	catch (HardwareException& exception) {
+		exception.what();
 	}
-	else {
-		cout << "숫자 임" << endl;
-	}
-	//split >> this->cmd >> this->op1 >> this->op2;
-
-
-
-
 }
 
 void CPU::execute() {
-	if (!this->cmd.compare("ADD")) { // 0 return if equal
+	if (!this->cmd.compare("ADD"))
+		cout << "\t" << this->instruction << ": \t" << (this->op1 + this->op2) << endl;
 
-	}
-	else if (!this->cmd.compare("SUB")) {
+	else if (!this->cmd.compare("SUB"))
+		cout << "\t" << this->instruction << ": \t" << (this->op1 - this->op2) << endl;
 
-	}
-	else if (!this->cmd.compare("MUL")) {
+	else if (!this->cmd.compare("MUL"))
+		cout << "\t" << this->instruction << ": \t" << (this->op1 * this->op2) << endl;
 
-	}
 	else if (!this->cmd.compare("DIV")) {
-		if (this->op2 == 0) {
-			throw ("0으로 나눌 수 없음");
-		}
-	}
-	else {
-		throw "";
+		if (this->op2 == 0)
+			throw HardwareException("execute", "cannot be devided by zero");
+		else
+			cout << "\t" << this->instruction << ": \t" << (this->op1 / this->op2) << endl;
 	}
 }
 
 void CPU::run() {
-	//try {
-	//	this->fetch();
-	//}
-	//catch ();
+	try {
+		while (true) {
+			this->fetch();
+			this->decode();
+			this->execute();
+		}
+	}
+	catch (HardwareException& exception) {
+		exception.what();
+	}
 }
 
 int CPU::stringToInt(string x) {
-
+	if (atoi(x.c_str()) != 0 || x.compare("0") == 0)
+		return atoi(x.c_str());
+	else
+		throw HardwareException("decode", "operand type exception");
 }
 
 int main() {
